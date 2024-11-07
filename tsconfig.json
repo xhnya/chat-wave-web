@@ -3,27 +3,5 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ],
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "strict": true,
-    "jsx": "preserve",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowJs": true, // 允许使用 JavaScript 文件
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"] // 根据你的项目结构调整路径
-    }
-  },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.js", // 确保包含 JS 文件
-    "src/**/*.d.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue"
   ]
 }
