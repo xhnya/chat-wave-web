@@ -2,8 +2,24 @@ import axiosInstance from './axiosInstance';
 
 // 登录接口
 export function loginApi(data: any) {
-    return axiosInstance({
-        url: '/login',
+    return axiosInstance.request({
+        url: '/user/login',
+        method: 'post',
+        data: data
+    })
+}
+
+export function getUserInfoApi(data: any) {
+    return axiosInstance.request({
+        url: '/user/getUserInfo',
+        method: 'post',
+        data: data
+    })
+}
+
+export function referTokenApi(data: any) {
+    return axiosInstance.request({
+        url: '/user/referToken',
         method: 'post',
         data: data
     })
