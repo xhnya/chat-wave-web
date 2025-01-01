@@ -1,4 +1,4 @@
-import { createMemoryHistory, createRouter } from 'vue-router'
+import {createRouter, createWebHashHistory,} from 'vue-router'
 import routers from "./routes.ts";
 
 
@@ -6,7 +6,7 @@ import routers from "./routes.ts";
 const routes = routers;
 
 const router = createRouter({
-    history: createMemoryHistory(),
+    history: createWebHashHistory(),
     routes,
 })
 async function isTokenValid(token: any) {
@@ -31,7 +31,8 @@ async function isTokenValid(token: any) {
 
 router.beforeEach(async (to, from, next) => {
     const token = localStorage.getItem('chat-wave-access_token');
-    if (to.path !== '/login') {
+    // 排除登录和注册页面的拦截
+    if (to.path !== '/login' && to.path !== '/register') {
         if (token) {
             const valid = await isTokenValid(token);
             if (valid) {

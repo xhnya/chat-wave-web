@@ -5,7 +5,7 @@ import {referTokenApi} from "./userApi.ts";
 
 // 创建 Axios 实例
 const axiosInstance: AxiosInstance = axios.create({
-    baseURL: 'http://127.0.0.1:9000', // 设置基础URL
+    baseURL: 'http://localhost:9000', // 设置基础URL
     timeout: 10000, // 设置请求超时
     headers: {
         'Content-Type': 'application/json;charset=UTF-8', // 设置请求头
@@ -36,7 +36,6 @@ axiosInstance.interceptors.request.use(
 let isRefreshing = false;  // 标记是否正在刷新令牌
 let failedQueue: any[] = []; // 保存请求失败队列
 
-// 响应拦截器
 axiosInstance.interceptors.response.use(
     (response: AxiosResponse) => {
         // 你可以在这里处理响应数据，比如全局错误处理等
@@ -53,9 +52,10 @@ axiosInstance.interceptors.response.use(
 
         // 如果是 401 错误且令牌过期，尝试刷新令牌
         if (error.response && error.response.status === 401) {
-            const refreshTokenValid = error.response.headers['Refresh-Token-Valid'];
-
-            if (refreshTokenValid === 'false') {
+            const refreshTokenValid = error.response.headers['refresh-token-valid'];
+            console.log('refreshTokenValid', error.response);
+            console.log('refreshTokenValid', refreshTokenValid);
+            if (refreshTokenValid === "false") {
                 // 刷新令牌过期，需要重新登录
                 localStorage.removeItem('chat-wave-access_token');
                 localStorage.removeItem('chat-wave-refresh_token');
@@ -67,12 +67,15 @@ axiosInstance.interceptors.response.use(
                 } catch (err) {
                     console.error('跳转到登录页失败', err);
                 }
+
+                return Promise.reject(error); // 跳转后直接返回拒绝 Promise
             } else if (!isRefreshing) {
                 // 如果没有正在刷新令牌，刷新令牌并更新请求头
                 isRefreshing = true;
 
                 try {
                     const res = await referTokenApi({});
+
                     const { accessToken, refreshToken } = res.data;
 
                     // 更新本地存储中的令牌
@@ -102,7 +105,7 @@ axiosInstance.interceptors.response.use(
                         console.error('跳转到登录页失败', err);
                     }
 
-                    return Promise.reject(error);
+                    return Promise.reject(error); // 跳转后返回拒绝 Promise
                 } finally {
                     isRefreshing = false; // 刷新令牌过程结束
                 }
@@ -118,10 +121,15 @@ axiosInstance.interceptors.response.use(
             });
         }
 
+
+        //弹出错误提示
+        ElMessage.error(error.response.data.message);
+
         // 如果不是 401 错误，直接返回错误
         return Promise.reject(error);
     }
 );
+
 
 export default axiosInstance;
 /**
