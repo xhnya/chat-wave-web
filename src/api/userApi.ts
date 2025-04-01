@@ -24,3 +24,13 @@ export function referTokenApi(data: any) {
         data: data
     })
 }
+
+//注册
+// 登录接口
+export function registerApi(data: any) {
+    return axiosInstance.request({
+        url: '/users/register',
+        method: 'post',
+        data: data
+    })
+}

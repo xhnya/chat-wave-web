@@ -24,6 +24,7 @@
 import { ref } from "vue";
 import router from "../../router";
 import { ElMessage } from "element-plus";
+import {registerApi} from "@/api/userApi.ts";
 
 const registerInfo = ref({
   userName: '',
@@ -37,15 +38,15 @@ const register = () => {
     return;
   }
 
-  // registerApi(registerInfo.value).then((res: any) => {
-  //   ElMessage.success('注册成功');
-  //   // 保存token
-  //   localStorage.setItem('chat-wave-access_token', res.data.accessToken);
-  //   localStorage.setItem('chat-wave-refresh_token', res.data.refreshToken);
-  //
-  //   // 跳转到首页
-  //   router.push({ path: '/' });
-  // });
+  registerApi(registerInfo.value).then((res: any) => {
+    ElMessage.success('注册成功');
+    // 保存token
+    localStorage.setItem('chat-wave-access_token', res.data.accessToken);
+    localStorage.setItem('chat-wave-refresh_token', res.data.refreshToken);
+
+    // 跳转到首页
+    router.push({ path: '/' });
+  });
 };
 
 const goToLogin = () => {
