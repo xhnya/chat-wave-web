@@ -1,9 +1,10 @@
 <template>
   <div class="register-container">
     <el-card style="max-width: 480px; width: 100%;margin-top: 10%">
-      <el-form :model="registerInfo" label-width="80px">
+<!--      表单验证，都要填-->
+      <el-form   ref="registerForm" :rules="rules" :model="registerInfo" label-width="80px">
         <el-form-item label="用户名" prop="userName">
-          <el-input v-model="registerInfo.userName"></el-input>
+          <el-input v-model="registerInfo.username"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input type="password" v-model="registerInfo.password"></el-input>
@@ -26,26 +27,44 @@ import router from "../../router";
 import { ElMessage } from "element-plus";
 import {registerApi} from "@/api/userApi.ts";
 
+const registerForm = ref();
 const registerInfo = ref({
-  userName: '',
+  username: '',
   password: '',
   confirmPassword: ''
 });
-
+const rules = ref({
+  userName: [
+    { required: true, message: '请输入用户名', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请确认密码', trigger: 'blur' },
+    { validator: (rule: any, value: string, callback: (error?: Error) => void) => {
+        if (value !== registerInfo.value.password) {
+          callback(new Error('两次密码输入不一致'));
+        } else {
+          callback();
+        }
+      }, trigger: 'blur'
+    }
+  ]
+});
 const register = () => {
-  if (registerInfo.value.password !== registerInfo.value.confirmPassword) {
-    ElMessage.error('密码和确认密码不一致');
-    return;
-  }
-
-  registerApi(registerInfo.value).then((res: any) => {
-    ElMessage.success('注册成功');
-    // 保存token
-    localStorage.setItem('chat-wave-access_token', res.data.accessToken);
-    localStorage.setItem('chat-wave-refresh_token', res.data.refreshToken);
-
-    // 跳转到首页
-    router.push({ path: '/' });
+  registerForm.value.validate((valid: any) => {
+    if (valid) {
+      registerApi(registerInfo.value).then((res: any) => {
+        ElMessage.success('注册成功');
+        localStorage.setItem('chat-wave-access_token', res.data.accessToken);
+        localStorage.setItem('chat-wave-refresh_token', res.data.refreshToken);
+        router.push({ path: '/' });
+      });
+    } else {
+      ElMessage.error('请填写完整的表单');
+      return false;
+    }
   });
 };
 
