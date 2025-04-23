@@ -1,6 +1,7 @@
 
 
 export interface userInfoModel {
-    userName: string;
+    username: string;
     password: string;
+    userId: number;
 }

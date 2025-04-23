@@ -2,8 +2,8 @@
   <div class="login-container">
     <el-card style="max-width: 480px; width: 100%;">
       <el-form :model="userInfo" label-width="80px">
-        <el-form-item label="用户名" prop="userName">
-          <el-input v-model="userInfo.userName"></el-input>
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="userInfo.username"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input type="password" v-model="userInfo.password"></el-input>
@@ -18,15 +18,20 @@
 </template>
 <script setup lang="ts">
 import { ref} from "vue";
-import {userInfoModel} from "./UserModel.ts";
-import {loginApi} from "../../api/userApi.ts";
+import {userInfoModel} from "@/type/UserModel";
+import {loginApi} from "@/api/userApi.ts";
 import router from "../../router";
 import {ElMessage} from "element-plus";
+import { useIMStore } from '@/stores/im'
+import {useUserStore} from "@/stores/user.ts";
 
+const im = useIMStore()
+const userStore = useUserStore()
 
 const userInfo = ref<userInfoModel>({
-  userName: '',
-  password: ''
+  username: '',
+  password: '',
+  userId: 0,
 })
 
 
@@ -36,6 +41,14 @@ const login = () => {
     // 保存token
     localStorage.setItem('chat-wave-access_token', res.data.accessToken)
     localStorage.setItem('chat-wave-refresh_token', res.data.refreshToken)
+
+    // im.init(res.data.id)
+    const userInfoResponse: userInfoModel= {
+      userId: res.data.id,
+      username: res.data.username,
+      password: '',
+    }
+    userStore.setUserInfo(userInfoResponse)
 
     // 跳转到首页
     router.push({path: '/'})

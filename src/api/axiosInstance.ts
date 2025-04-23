@@ -38,97 +38,138 @@ let failedQueue: any[] = []; // 保存请求失败队列
 
 axiosInstance.interceptors.response.use(
     (response: AxiosResponse) => {
-        // 你可以在这里处理响应数据，比如全局错误处理等
+        // 处理正常响应
         const newAccessToken = response.headers['new-access-token'];
         if (newAccessToken) {
-            // 如果响应头中包含新的 access_token，则更新 localStorage 中的 token
             localStorage.setItem('chat-wave-access_token', newAccessToken);
         }
-        return response.data; // 只返回响应的 data 部分
+        return response.data;
     },
     async (error) => {
-        // 处理响应错误
-        const originalRequest = error.config;
-
-        // 如果是 401 错误且令牌过期，尝试刷新令牌
+        // 统一处理401错误
         if (error.response && error.response.status === 401) {
-            const refreshTokenValid = error.response.headers['refresh-token-valid'];
-            console.log('refreshTokenValid', error.response);
-            console.log('refreshTokenValid', refreshTokenValid);
-            if (refreshTokenValid === "false") {
-                // 刷新令牌过期，需要重新登录
-                localStorage.removeItem('chat-wave-access_token');
-                localStorage.removeItem('chat-wave-refresh_token');
-                ElMessage.error('访问令牌失效，请重新登录');
+            // 清除失效的token
+            localStorage.removeItem('chat-wave-access_token');
+            localStorage.removeItem('chat-wave-refresh_token');
 
-                const router = useRouter();
-                try {
-                    await router.push('/login'); // 处理 Promise
-                } catch (err) {
-                    console.error('跳转到登录页失败', err);
-                }
+            // 显示错误提示
+            ElMessage.error('登录已过期，请重新登录');
 
-                return Promise.reject(error); // 跳转后直接返回拒绝 Promise
-            } else if (!isRefreshing) {
-                // 如果没有正在刷新令牌，刷新令牌并更新请求头
-                isRefreshing = true;
-
-                try {
-                    const res = await referTokenApi({});
-
-                    const { accessToken, refreshToken } = res.data;
-
-                    // 更新本地存储中的令牌
-                    localStorage.setItem('chat-wave-access_token', accessToken);
-                    localStorage.setItem('chat-wave-refresh_token', refreshToken);
-
-                    // 将队列中的请求进行重试
-                    failedQueue.forEach((callback) => callback(accessToken, refreshToken));
-                    failedQueue = []; // 清空队列
-
-                    // 更新原始请求的头
-                    originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
-                    originalRequest.headers['X-Refresh-Token'] = `Bearer ${refreshToken}`;
-
-                    // 重新发起请求
-                    return axiosInstance(originalRequest);
-                } catch (error) {
-                    // 刷新令牌失败，清空缓存的令牌并跳转到登录页
-                    localStorage.removeItem('chat-wave-access_token');
-                    localStorage.removeItem('chat-wave-refresh_token');
-                    ElMessage.error('刷新令牌失败，请重新登录');
-
-                    const router = useRouter();
-                    try {
-                        await router.push('/login');
-                    } catch (err) {
-                        console.error('跳转到登录页失败', err);
-                    }
-
-                    return Promise.reject(error); // 跳转后返回拒绝 Promise
-                } finally {
-                    isRefreshing = false; // 刷新令牌过程结束
-                }
+            // 跳转到登录页
+            const router = useRouter();
+            try {
+                await router.push('/login');
+            } catch (err) {
+                console.error('跳转登录页失败', err);
             }
 
-            // 如果正在刷新令牌，加入队列等待令牌刷新完毕后再重试
-            return new Promise((resolve) => {
-                failedQueue.push((accessToken: string, refreshToken: string) => {
-                    originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
-                    originalRequest.headers['X-Refresh-Token'] = `Bearer ${refreshToken}`;
-                    resolve(axiosInstance(originalRequest));
-                });
-            });
+            // 直接拒绝后续处理
+            return Promise.reject(error);
         }
 
+        // 其他错误处理
+        if (error.response?.data?.message) {
+            ElMessage.error(error.response.data.message);
+        } else {
+            ElMessage.error('请求发生错误');
+        }
 
-        //弹出错误提示
-        ElMessage.error(error.response.data.message);
-
-        // 如果不是 401 错误，直接返回错误
         return Promise.reject(error);
     }
 );
+// axiosInstance.interceptors.response.use(
+//     (response: AxiosResponse) => {
+//         // 你可以在这里处理响应数据，比如全局错误处理等
+//         const newAccessToken = response.headers['new-access-token'];
+//         if (newAccessToken) {
+//             // 如果响应头中包含新的 access_token，则更新 localStorage 中的 token
+//             localStorage.setItem('chat-wave-access_token', newAccessToken);
+//         }
+//         return response.data; // 只返回响应的 data 部分
+//     },
+//     async (error) => {
+//         // 处理响应错误
+//         const originalRequest = error.config;
+//
+//         // 如果是 401 错误且令牌过期，尝试刷新令牌
+//         if (error.response && error.response.status === 401) {
+//             const refreshTokenValid = error.response.headers['refresh-token-valid'];
+//             console.log('refreshTokenValid', error.response);
+//             console.log('refreshTokenValid', refreshTokenValid);
+//             if (refreshTokenValid === "false") {
+//                 // 刷新令牌过期，需要重新登录
+//                 localStorage.removeItem('chat-wave-access_token');
+//                 localStorage.removeItem('chat-wave-refresh_token');
+//                 ElMessage.error('访问令牌失效，请重新登录');
+//
+//                 const router = useRouter();
+//                 try {
+//                     await router.push('/login'); // 处理 Promise
+//                 } catch (err) {
+//                     console.error('跳转到登录页失败', err);
+//                 }
+//
+//                 return Promise.reject(error); // 跳转后直接返回拒绝 Promise
+//             } else if (!isRefreshing) {
+//                 // 如果没有正在刷新令牌，刷新令牌并更新请求头
+//                 isRefreshing = true;
+//
+//                 try {
+//                     const res = await referTokenApi({});
+//
+//                     const { accessToken, refreshToken } = res.data;
+//
+//                     // 更新本地存储中的令牌
+//                     localStorage.setItem('chat-wave-access_token', accessToken);
+//                     localStorage.setItem('chat-wave-refresh_token', refreshToken);
+//
+//                     // 将队列中的请求进行重试
+//                     failedQueue.forEach((callback) => callback(accessToken, refreshToken));
+//                     failedQueue = []; // 清空队列
+//
+//                     // 更新原始请求的头
+//                     originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+//                     originalRequest.headers['X-Refresh-Token'] = `Bearer ${refreshToken}`;
+//
+//                     // 重新发起请求
+//                     return axiosInstance(originalRequest);
+//                 } catch (error) {
+//                     // 刷新令牌失败，清空缓存的令牌并跳转到登录页
+//                     localStorage.removeItem('chat-wave-access_token');
+//                     localStorage.removeItem('chat-wave-refresh_token');
+//                     ElMessage.error('刷新令牌失败，请重新登录');
+//
+//                     const router = useRouter();
+//                     try {
+//                         await router.push('/login');
+//                     } catch (err) {
+//                         console.error('跳转到登录页失败', err);
+//                     }
+//
+//                     return Promise.reject(error); // 跳转后返回拒绝 Promise
+//                 } finally {
+//                     isRefreshing = false; // 刷新令牌过程结束
+//                 }
+//             }
+//
+//             // 如果正在刷新令牌，加入队列等待令牌刷新完毕后再重试
+//             return new Promise((resolve) => {
+//                 failedQueue.push((accessToken: string, refreshToken: string) => {
+//                     originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+//                     originalRequest.headers['X-Refresh-Token'] = `Bearer ${refreshToken}`;
+//                     resolve(axiosInstance(originalRequest));
+//                 });
+//             });
+//         }
+//
+//
+//         //弹出错误提示
+//         ElMessage.error(error.response.data.message);
+//
+//         // 如果不是 401 错误，直接返回错误
+//         return Promise.reject(error);
+//     }
+// );
 
 
 export default axiosInstance;

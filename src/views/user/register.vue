@@ -3,7 +3,7 @@
     <el-card style="max-width: 480px; width: 100%;margin-top: 10%">
 <!--      表单验证，都要填-->
       <el-form   ref="registerForm" :rules="rules" :model="registerInfo" label-width="80px">
-        <el-form-item label="用户名" prop="userName">
+        <el-form-item label="用户名" prop="username">
           <el-input v-model="registerInfo.username"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
@@ -34,7 +34,7 @@ const registerInfo = ref({
   confirmPassword: ''
 });
 const rules = ref({
-  userName: [
+  username: [
     { required: true, message: '请输入用户名', trigger: 'blur' }
   ],
   password: [
@@ -57,9 +57,9 @@ const register = () => {
     if (valid) {
       registerApi(registerInfo.value).then((res: any) => {
         ElMessage.success('注册成功');
-        localStorage.setItem('chat-wave-access_token', res.data.accessToken);
-        localStorage.setItem('chat-wave-refresh_token', res.data.refreshToken);
-        router.push({ path: '/' });
+        // localStorage.setItem('chat-wave-access_token', res.data.accessToken);
+        // localStorage.setItem('chat-wave-refresh_token', res.data.refreshToken);
+        // router.push({ path: '/' });
       });
     } else {
       ElMessage.error('请填写完整的表单');

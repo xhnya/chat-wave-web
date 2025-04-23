@@ -3,17 +3,16 @@ import axiosInstance from './axiosInstance';
 // 登录接口
 export function loginApi(data: any) {
     return axiosInstance.request({
-        url: '/user/login',
+        url: '/users/login',
         method: 'post',
         data: data
     })
 }
 
-export function getUserInfoApi(data: any) {
+export function getUserInfoApi() {
     return axiosInstance.request({
-        url: '/user/getUserInfo',
-        method: 'post',
-        data: data
+        url: '/users/getUserInfo',
+        method: 'get'
     })
 }
 
