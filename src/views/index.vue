@@ -1,7 +1,21 @@
 
 <template>
 <div>
-  <left-menu></left-menu>
+
+
+
+  <v-card>
+    <v-layout>
+      <left-menu></left-menu>
+      <v-main>
+        <v-card>
+          <chat-list></chat-list>
+        </v-card>
+      </v-main>
+    </v-layout>
+  </v-card>
+
+
   <el-button type="primary" @click="sendMsg">打开</el-button>
 </div>
 </template>
@@ -14,6 +28,7 @@ import LeftMenu from "@/components/LeftMenu.vue";
 import {useIMStore} from "@/stores/im";
 
 import {useUserStore} from "@/stores/user.ts";
+import ChatList from "@/components/ChatList.vue";
 const imStore = useIMStore()
 const userStore = useUserStore()
 
@@ -40,8 +55,17 @@ const sendMsg = () => {
     senderId: 1,
     receiverId: 2,
     groupId: null,
+    isSystemMessage: false,
+    status: 'sent'
   })
   console.log('send msg')
+}
+
+//接收消息
+const receiveMsg = () => {
+  //useWebSocket中的message
+
+
 }
 
 

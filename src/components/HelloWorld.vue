@@ -1,9 +1,35 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import {onMounted, ref} from 'vue'
+import {useUserStore} from "@/stores/user.ts";
+import {ElMessage} from "element-plus";
+import {getChatListApi} from "@/api/chatApi.ts";
 
 defineProps<{ msg: string }>()
 
 const count = ref(0)
+
+
+onMounted(() => {
+  console.log('ChatList component mounted')
+  getChatList()
+})
+//userStore
+const userStore = useUserStore()
+const chatList = ref([])
+
+const getChatList = () => {
+  // Mock data for chat list
+  const userId=userStore.userInfo?.userId
+  if (!userId) {
+    ElMessage.error('用户未登录')
+    return
+  }
+  getChatListApi(userId).then((res:any) => {
+    chatList.value=res.data
+  })
+
+
+}
 </script>
 
 <template>
