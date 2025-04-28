@@ -1,24 +1,18 @@
-
 <template>
-<div>
-
-
-
-  <v-card>
-    <v-layout>
-      <left-menu></left-menu>
-      <v-main>
-        <v-card>
-          <chat-list></chat-list>
-        </v-card>
-      </v-main>
-    </v-layout>
-  </v-card>
-
-
-  <el-button type="primary" @click="sendMsg">打开</el-button>
-</div>
+  <div style="height: 100vh; overflow: hidden;">
+    <v-card height="100%">
+      <v-layout style="height: 100%;">
+        <left-menu style="height: 100%; overflow-y: auto;"></left-menu>
+        <v-main>
+          <v-container fluid style="height: 100%;padding: 0;">
+            <router-view></router-view>
+          </v-container>
+        </v-main>
+      </v-layout>
+    </v-card>
+  </div>
 </template>
+
 <script setup lang="ts">
 
 
@@ -29,6 +23,7 @@ import {useIMStore} from "@/stores/im";
 
 import {useUserStore} from "@/stores/user.ts";
 import ChatList from "@/components/ChatList.vue";
+import ChatContent from "@/components/ChatContent.vue";
 const imStore = useIMStore()
 const userStore = useUserStore()
 
@@ -75,5 +70,6 @@ const receiveMsg = () => {
 </script>
 
 <style scoped>
+
 
 </style>

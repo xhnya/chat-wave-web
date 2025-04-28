@@ -16,21 +16,18 @@
       <v-divider></v-divider>
 
       <v-list density="compact" nav>
-        <v-list-item prepend-icon="mdi-folder" title="My Files" value="myfiles"></v-list-item>
-        <v-list-item prepend-icon="mdi-account-multiple" title="Shared with me" value="shared"></v-list-item>
-        <v-list-item prepend-icon="mdi-star" title="Starred" value="starred"></v-list-item>
+        <v-list-item prepend-icon="mdi-message-bulleted" title="消息"
+                     :to="'/chat'"
+                     value="myfiles"></v-list-item>
+        <v-list-item prepend-icon="mdi-account-multiple"
+                     :to="'/contacts'"
+                     title="联系人" value="shared"></v-list-item>
       </v-list>
     </v-navigation-drawer>
   </div>
 </template>
 <script setup lang="ts">
 
-const handleOpen = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
-}
-const handleClose = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
-}
 
 
 

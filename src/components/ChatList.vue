@@ -1,4 +1,5 @@
 <template>
+
   <div class="chat-list">
     <v-list class="pa-0">
       <!-- 置顶聊天 -->
@@ -81,11 +82,14 @@
       </template>
     </v-list>
   </div>
+
+
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-
+// import VueDraggableResizable from 'vue-draggable-resizable'
+// import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css'
 const chats = ref([
   {
     id: 1,
@@ -128,6 +132,7 @@ const selectChat = (chat) => {
 </script>
 
 <style scoped>
+
 .chat-list {
   margin: 0 auto;
   background-color: #fff;
