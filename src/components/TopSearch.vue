@@ -42,6 +42,8 @@ const clickAddBtn=(name:string)=>{
   } else if (name === '添加好友') {
     // 处理添加好友的逻辑
     console.log('添加好友');
+    // 打开添加好友对话框
+    addContactsDialogRef.value.openDialog()
   }
 }
 

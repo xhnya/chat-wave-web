@@ -33,3 +33,11 @@ export function registerApi(data: any) {
         data: data
     })
 }
+
+//搜索用户
+export function searchUserApi(data: any) {
+    return axiosInstance.request({
+        url: `/users/searchUser?params=${data}`,
+        method: 'get'
+    })
+}
