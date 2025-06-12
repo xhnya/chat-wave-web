@@ -45,8 +45,10 @@
 <script setup lang="ts">
 
 import {ref} from "vue";
-import {searchUserApi} from "@/api/userApi.ts";
+import {searchUserApi, sendFriendRequestApi} from "@/api/userApi.ts";
 import {ElMessage} from "element-plus";
+import {useUserStore} from "@/stores/user.ts";
+import {storeToRefs} from "pinia";
 
 const dialog =ref(false)
 
@@ -65,12 +67,26 @@ const searchFun = async (param: any) => {
     list.value = []
   })
 }
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
+
 
 const handleClick= (item: any) => {
   // 处理点击事件
   console.log('Clicked item:', item)
   // 可以在这里添加更多逻辑，比如打开用户详情等
-  ElMessage.success(`已添加 ${item.nickname} 到好友列表`)
+  //ElMessage.success(`已添加 ${item.nickname} 到好友列表`)
+  if (!userInfo.value) {
+    ElMessage.error('请先登录')
+    return
+  }
+
+  sendFriendRequestApi({    userId: userInfo.value.userId,
+    friendId: item.id }).then(() => {
+    ElMessage.success('好友请求已发送')
+  }).catch((error) => {
+    ElMessage.error(`发送好友请求失败: ${error.message}`)
+  })
 }
 
 const openDialog = () => {

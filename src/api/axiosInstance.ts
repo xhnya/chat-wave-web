@@ -43,6 +43,13 @@ axiosInstance.interceptors.response.use(
         if (newAccessToken) {
             localStorage.setItem('chat-wave-access_token', newAccessToken);
         }
+        const res = response.data;
+        // 统一处理业务状态码
+        if (res.status !== 200) {
+            // ElMessage.error(res.message || '请求失败');
+            return Promise.reject(new Error(res.message || 'Error'));
+        }
+
         return response.data;
     },
     async (error) => {

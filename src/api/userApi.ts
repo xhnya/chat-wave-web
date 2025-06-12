@@ -41,3 +41,12 @@ export function searchUserApi(data: any) {
         method: 'get'
     })
 }
+
+//发送好友请求
+export function sendFriendRequestApi(data: any) {
+    return axiosInstance.request({
+        url: `/fiends/addFriendRequest?userId=${data.userId}&friendId=${data.friendId}`,
+        method: 'post',
+        data: data
+    })
+}

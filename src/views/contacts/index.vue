@@ -6,6 +6,7 @@
 
           <v-card style="height: 100%; border-right: 1px solid #e0e0e0;">
             <top-search></top-search>
+<!--            TODO: 好友通知-->
             <v-expansion-panels multiple>
               <v-expansion-panel
                   v-for="(group, i) in groups"
