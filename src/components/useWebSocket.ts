@@ -1,4 +1,5 @@
 import { ref, onBeforeUnmount } from 'vue'
+import {ElNotification} from "element-plus";
 
 export interface Message {
     senderId: number;
@@ -80,6 +81,12 @@ export function useWebSocket(userId: number, isChatOpen: boolean, currentChatUse
     const handleMessage = (msg: Message) => {
         // 判断是否是系统消息
         if (msg.isSystemMessage) {
+            //提示
+            ElNotification({
+                title: '系统消息',
+                message: msg.content,
+                duration: 3000,
+            })
             return // 如果是系统消息，不处理
         }
 
