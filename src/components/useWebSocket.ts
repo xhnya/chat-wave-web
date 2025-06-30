@@ -9,7 +9,7 @@ export interface Message {
     type: 'text' | 'emoji' | 'image' | 'voice';
     status: 'sent' | 'received' | 'read';
     //聊天消息还是系统消息
-    isSystemMessage: boolean;
+    systemMessage: boolean;
     timestamp?: string;
 }
 
@@ -41,10 +41,19 @@ export function useWebSocket(userId: number, isChatOpen: boolean, currentChatUse
     }
 
     const connect = () => {
+        if (socket.value) {
+            const state = socket.value.readyState;
+            if (state === WebSocket.OPEN || state === WebSocket.CONNECTING) {
+                console.log('WebSocket 已存在且正在连接或已连接，跳过重复连接');
+                return;
+            }
+        }
+
+
         const ws = new WebSocket(`ws://localhost:9000/ws/chat?userId=${userId}`)
 
         ws.onopen = () => {
-            console.log('✅ WebSocket connected')
+            console.log('✅ WebSocket 连接')
             if (reconnectTimer) {
                 clearTimeout(reconnectTimer)
                 reconnectTimer = null
@@ -52,9 +61,16 @@ export function useWebSocket(userId: number, isChatOpen: boolean, currentChatUse
         }
 
         ws.onmessage = (event) => {
-            const msg: Message = JSON.parse(event.data)
-            handleMessage(msg)
-        }
+            console.log('收到WebSocket消息事件:', event.type);
+            try {
+                const msg: Message = JSON.parse(event.data);
+                console.log('解析后的消息对象:', msg);
+                handleMessage(msg);
+            } catch (error) {
+                console.error('消息解析失败:', error);
+                console.error('原始消息内容:', event.data);
+            }
+        };
 
         ws.onerror = (e) => {
             console.warn('❌ WebSocket error', e)
@@ -79,8 +95,7 @@ export function useWebSocket(userId: number, isChatOpen: boolean, currentChatUse
     }
 
     const handleMessage = (msg: Message) => {
-        // 判断是否是系统消息
-        if (msg.isSystemMessage) {
+        if (msg.systemMessage) {
             //提示
             ElNotification({
                 title: '系统消息',
