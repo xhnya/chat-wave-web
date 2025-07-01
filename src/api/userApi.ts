@@ -50,3 +50,10 @@ export function sendFriendRequestApi(data: any) {
         data: data
     })
 }
+//获取好友请求
+export function getFriendRequestApi(params: any) {
+    return axiosInstance.request({
+        url: '/fiends/getFriendsRequestList?userId='+params.userId,
+        method: 'get'
+    })
+}
