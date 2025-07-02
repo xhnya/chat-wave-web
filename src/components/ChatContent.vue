@@ -107,21 +107,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, computed } from 'vue';
+import {ref, nextTick, computed, watch} from 'vue';
 import MessageBubble from './MessageBubble.vue';
-
-interface ChatMessage {
-  id: string;
-  content: any;
-  type: 'text' | 'image' | 'file' | 'audio';
-  isOwn: boolean;
-  timestamp: number;
-  status: 'sending' | 'sent' | 'failed' | 'read';
-  progress?: number;
-}
+// script setup
+import { defineProps } from 'vue'
+import {useIMStore} from "@/stores/im.ts";
+import {Message} from "@/components/useWebSocket.ts";
+const props = defineProps<{ chatId: number|null }>()
 
 const allowLoadMore=ref(false)
-const messages = ref<ChatMessage[]>([]);
+const messages = ref<Message[]>([]);
 const newMessage = ref('');
 const messagesContainer = ref<HTMLElement>();
 const fileInput = ref<HTMLInputElement>();
@@ -135,11 +130,12 @@ const canSend = computed(() => {
   return newMessage.value.trim() || isRecording.value;
 });
 
+const useImStore=useIMStore()
 // 发送文本消息
 const sendTextMessage = async () => {
   if (!newMessage.value.trim()) return;
 
-  const message: ChatMessage = {
+  const message: Message = {
     id: Date.now().toString(),
     content: newMessage.value.trim(),
     type: 'text',
@@ -153,9 +149,7 @@ const sendTextMessage = async () => {
   scrollToBottom();
 
   // 模拟发送
-  setTimeout(() => {
-    message.status = 'sent';
-  }, 2000);
+  useImStore.send({...message})
 };
 
 // 文件处理
@@ -276,6 +270,21 @@ const generateHistoryMessages = () => {
 const toggleAttachmentMenu= () => {
   showAttachmentMenu.value = !showAttachmentMenu.value;
 };
+
+watch(
+    () => props.chatId,
+    async (newId) => {
+      if (!newId) {
+        messages.value = []
+        return
+      }
+      // 这里调用你的接口获取聊天记录
+      // const res = await getChatMessagesApi(newId)
+      // messages.value = res.data
+      messages.value = [] // 先清空，实际开发中替换为接口数据
+    },
+    { immediate: true }
+)
 </script>
 
 <style scoped>

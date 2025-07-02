@@ -79,6 +79,8 @@ const statusIcon = computed(() => {
   }
 });
 
+const openPreview = () => {
+}
 const statusColor = computed(() => {
   return props.message.status === 'failed' ? 'error' : 'primary';
 });

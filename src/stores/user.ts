@@ -19,5 +19,5 @@ export const useUserStore = defineStore('user', () => {
         clearUserInfo
     }
 },{
-    persist: true // 👈 自动存储 localStorage
+    persist: true
 })

@@ -17,3 +17,10 @@ export function getChatListApi(userId: number) {
         method: 'get'
     })
 }
+export function createChatListApi(data: any) {
+    return axiosInstance.request({
+        url: '/chatlist/createChatList',
+        method: 'post',
+        data: data
+    })
+}

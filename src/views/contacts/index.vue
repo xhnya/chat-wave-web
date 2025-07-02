@@ -29,10 +29,19 @@
                 </template>
 
                 <template #text>
-                  <v-list  class="pa-0 ma-0"  lines="two" style="margin: 0"   item-props :items="group.contacts">
-                    <template v-slot:subtitle="{ subtitle }">
-                      <div v-html="subtitle"></div>
-                    </template>
+                  <!-- 左侧联系人列表 -->
+                  <v-list class="pa-0 ma-0" lines="two" style="margin: 0" item-props :items="group.contacts">
+                    <v-list-item
+                        v-for="(contact, idx) in group.contacts"
+                        :key="contact.userId ?? idx"
+                        @click="selectContact(contact)"
+                        :active="selectedContact && selectedContact.userId === contact.userId"
+                    >
+                      <v-list-item-title>{{ contact.nickname || contact.title }}</v-list-item-title>
+                      <template v-slot:subtitle>
+                        <div v-html="contact.subtitle"></div>
+                      </template>
+                    </v-list-item>
                   </v-list>
                 </template>
               </v-expansion-panel>
@@ -73,10 +82,26 @@
               </div>
             </v-card-text>
           </v-card>
+          <!-- 右侧详情面板 -->
+          <v-card v-else-if="selectedContact" class="h-100">
+            <v-card-title>
+              联系人详情
+            </v-card-title>
+            <v-card-text>
+              <div>昵称：{{ selectedContact.nickname || selectedContact.title }}</div>
+              <div>状态：{{ selectedContact.status }}</div>
+              <!-- 其他详情字段 -->
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="primary" @click="goToChat(selectedContact)">去聊天</v-btn>
+            </v-card-actions>
+          </v-card>
           <div v-else>
             111
           </div>
         </v-col>
+
       </v-row>
     </div>
     <add-contacts-dialog ref="addContactsDialogRef"></add-contacts-dialog>
@@ -87,44 +112,62 @@
 
 import TopSearch from "@/components/TopSearch.vue";
 import AddContactsDialog from "@/components/addContactsDialog.vue";
-import {computed, ref} from "vue";
-import {getFriendRequestApi} from "@/api/userApi.ts";
+import {computed, onMounted, ref} from "vue";
+import {acceptFriendRequestApi, getFriendRequestApi} from "@/api/userApi.ts";
 import {useUserStore} from "@/stores/user.ts";
-
+import {getFriendsListApi} from "@/api/contacts.ts";
+import { useRouter } from 'vue-router';
+import {createChatListApi} from "@/api/chatApi.ts";
+import {ElMessage} from "element-plus";
 
 // 通知相关
 const notificationCount = ref(3);
 const showNotifications = ref(false);
 const notifications = ref<Array<{ userId: number; nickname: string; createdAt: Date; status: number }>>([]);
-const groups = [
-  {
-    name: '家人',
-    contacts: [
-      { title: '爸爸', subtitle: "[在线]爱运动", prependAvatar: 'https://cdn.vuetifyjs.com/images/lists/1.jpg' },
-      { title: '妈妈',  subtitle: "[在线]喜欢阅读", prependAvatar: 'https://cdn.vuetifyjs.com/images/lists/1.jpg' },
-    ],
-  },
-  {
-    name: '朋友',
-    contacts: [
-      { title: '小明',  subtitle: '[在线]在学习 Vue' },
-      { title: '小红',  subtitle: '[在线]准备考试' },
-    ],
-  },
-  {
-    name: '同事',
-    contacts: [
-      { title: '张三',subtitle: '[离线]正在开发项目' },
-      { title: '李四', subtitle: '[在线]开会中' },
-    ],
-  },
-];
+const groups = ref([])
 
 //获取用户info useUserStore()中获取
 const userInfo=computed(() => {
   const userStore = useUserStore();
   return userStore.userInfo;
 });
+
+onMounted(() => {
+  // 页面加载时获取联系人列表
+  getContactsList();
+});
+// script setup 部分
+const selectedContact = ref<any>(null);
+
+function selectContact(contact: any) {
+  selectedContact.value = contact;
+}
+
+const router = useRouter();
+
+function goToChat(contact: any) {
+  console.log('跳转到聊天', contact);
+  createChatListApi({ userId: userInfo.value?.userId, friendId: contact.userId })
+    .then(() => {
+      ElMessage.success('聊天创建成功');
+    })
+    .catch((error) => {
+      console.error('创建聊天失败:', error);
+    });
+
+
+  if (!contact?.userId) return;
+  router.push({ name: 'Chat', params: { userId: contact.userId } });
+}
+//获取联系人列表
+const  getContactsList = () => {
+  getFriendsListApi({userId:userInfo.value?.userId}).then((response) => {
+    // 假设返回的数据格式为 { data: Array<{ name: string; contacts: Array<{ userId: number; nickname: string; status: number }> }> }
+    groups.value = response.data
+  }).catch((error) => {
+    console.error('获取联系人列表失败:', error);
+  });
+};
 
 
 const getFriendRequestList = () => {
@@ -147,6 +190,14 @@ const acceptFriendRequest = (id: number) => {
   // 调用接受好友请求的API
   console.log('接受好友请求', id);
   removeNotification(id);
+  acceptFriendRequestApi({ userId: userInfo.value?.userId, friendId: id,status: 1 })
+    .then(() => {
+      // 假设接受成功后，更新通知状态
+      getFriendRequestList()
+    })
+    .catch(error => {
+      console.error('接受好友请求失败:', error);
+    });
   // 这里可以添加将好友添加到联系人列表的逻辑
 };
 

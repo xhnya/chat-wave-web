@@ -87,48 +87,53 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import {ref, computed, onMounted} from 'vue'
+import { defineProps, defineEmits } from 'vue'
+import {ElMessage} from "element-plus";
+import {getChatListApi} from "@/api/chatApi.ts";
 // import VueDraggableResizable from 'vue-draggable-resizable'
 // import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css'
-const chats = ref([
-  {
-    id: 1,
-    name: 'Alice',
-    avatar: 'https://i.pravatar.cc/150?img=1',
-    lastMessage: 'Hey, how are you?',
-    time: '10:20 AM',
-    pinned: true,
-    unreadCount: 2,
-  },
-  {
-    id: 2,
-    name: 'Bob',
-    avatar: 'https://i.pravatar.cc/150?img=2',
-    lastMessage: 'Got it, thanks!',
-    time: 'Yesterday',
-    pinned: false,
-    unreadCount: 0,
-  },
-  {
-    id: 3,
-    name: 'Charlie',
-    avatar: 'https://i.pravatar.cc/150?img=3',
-    lastMessage: '11111111111111?',
-    time: 'Mon',
-    pinned: false,
-    unreadCount: 10,
-  },
-])
+const chats = ref([])
 
 const selectedChatId = ref(null)
 
 const pinnedChats = computed(() => chats.value.filter(c => c.pinned))
 const normalChats = computed(() => chats.value.filter(c => !c.pinned))
 
-const selectChat = (chat) => {
-  selectedChatId.value = chat.id
+import {useUserStore} from "@/stores/user.ts";
+
+onMounted(() => {
+  getChatList()
+})
+//获取用户info useUserStore()中获取
+const userInfo=computed(() => {
+  const userStore = useUserStore();
+  return userStore.userInfo;
+});
+
+const getChatList = () => {
+  // Mock data for chat list
+  const userId=userInfo.value?.userId
+  if (!userId) {
+    ElMessage.error('用户未登录')
+    return
+  }
+  getChatListApi(userId).then((res:any) => {
+    chats.value=res.data
+  })
+
+
+}
+const props = defineProps<{ selectedChatId: number|null }>()
+const emit = defineEmits<{
+  (e: 'select', id: number): void
+}>()
+
+const selectChat = (chat: { id: number; unreadCount: number }) => {
+  emit('select', chat.id)
   chat.unreadCount = 0
 }
+
 </script>
 
 <style scoped>

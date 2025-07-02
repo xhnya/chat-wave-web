@@ -57,3 +57,12 @@ export function getFriendRequestApi(params: any) {
         method: 'get'
     })
 }
+// acceptFriendRequest
+//获取好友请求
+export function acceptFriendRequestApi(params: any) {
+    return axiosInstance.request({
+        url: '/fiends/acceptFriendRequest',
+        method: 'post',
+        data: params
+    })
+}
